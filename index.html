@@ -7,7 +7,7 @@
 <meta name="description" content="thorn — UI & frontend developer" />
 <meta property="og:title" content="thorn" />
 <meta property="og:description" content="UI & frontend developer · C# · Holy C" />
-<meta name="theme-color" content="#0a1a2f" />
+<meta name="theme-color" content="#06140b" />
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>" />
 <style>
 @font-face { font-family:"Prime"; src:url("assets/fonts/Prime-Regular.ttf"); font-display:swap; }
@@ -15,11 +15,11 @@
 @font-face { font-family:"Orbitron"; src:url("assets/fonts/Orbitron-Bold.ttf"); font-display:swap; }
 
 :root{
-  --navy-0:#0a1a2f; --navy-1:#0a3a6e; --navy-2:#12304f;
-  --blue-mid:#14406e; --blue:#2b6fb0; --blue-br:#2b8fe6;
-  --blue-glow:#4aa8ff; --blue-hot:#5ab8ff; --blue-hi:#6ac2ff;
-  --text:#eaf6ff; --text-soft:#9fc9ee; --text-dim:#6f9bc2;
-  --border:#2b6fb0;
+  --navy-0:#06140b; --navy-1:#0b3a1e; --navy-2:#124023;
+  --blue-mid:#155a2c; --blue:#2b9b4f; --blue-br:#22c55e;
+  --blue-glow:#4ade80; --blue-hot:#57e389; --blue-hi:#86efac;
+  --text:#eafff0; --text-soft:#9fe9bf; --text-dim:#6fbf90;
+  --border:#2b9b4f;
 }
 
 *{box-sizing:border-box; margin:0; padding:0;}
@@ -35,34 +35,39 @@ body{
 }
 
 /* ---------- Background ---------- */
+/* still-image fallback (shows if the video is missing / still loading) */
 .bg{
-  position:fixed; inset:0; z-index:-3;
+  position:fixed; inset:0; z-index:-4;
   background:url("assets/bg.png") center/cover no-repeat;
   transform:scale(1.08);
-  filter:brightness(0.55) saturate(1.15);
-  animation:bgDrift 24s ease-in-out infinite alternate;
+  filter:brightness(0.5) saturate(1.1);
 }
-@keyframes bgDrift{ from{transform:scale(1.08) translate(0,0);} to{transform:scale(1.14) translate(-1.5%,-1.5%);} }
+/* looping background video (drop your clip at assets/bg.mp4) */
+.bgvid{
+  position:fixed; inset:0; z-index:-3;
+  width:100%; height:100%; object-fit:cover;
+  filter:brightness(0.5) saturate(1.15);
+}
 
-/* blue tint + vignette on top of the photo */
+/* green tint + vignette on top */
 .bg-tint{
   position:fixed; inset:0; z-index:-2; pointer-events:none;
   background:
-    radial-gradient(120% 90% at 50% 0%, rgba(43,143,230,0.22), transparent 55%),
-    radial-gradient(120% 90% at 50% 100%, rgba(10,26,47,0.85), transparent 60%),
-    linear-gradient(180deg, rgba(5,8,13,0.35), rgba(5,8,13,0.75));
+    radial-gradient(120% 90% at 50% 0%, rgba(34,197,94,0.20), transparent 55%),
+    radial-gradient(120% 90% at 50% 100%, rgba(6,26,14,0.85), transparent 60%),
+    linear-gradient(180deg, rgba(5,8,7,0.35), rgba(5,8,7,0.72));
 }
 
-/* drifting starfield / sparkles (same idea as Pavlov button sparkle) */
+/* drifting starfield / sparkles */
 .stars{
   position:fixed; inset:0; z-index:-1; pointer-events:none; opacity:0.5;
   background-image:
     radial-gradient(circle at 15% 25%, rgba(255,255,255,.9) .8px, transparent 1.6px),
-    radial-gradient(circle at 72% 62%, rgba(200,232,255,.85) .8px, transparent 1.6px),
+    radial-gradient(circle at 72% 62%, rgba(200,255,220,.85) .8px, transparent 1.6px),
     radial-gradient(circle at 45% 82%, rgba(255,255,255,.8) .8px, transparent 1.6px),
-    radial-gradient(circle at 86% 24%, rgba(180,220,255,.8) .8px, transparent 1.4px),
+    radial-gradient(circle at 86% 24%, rgba(180,255,210,.8) .8px, transparent 1.4px),
     radial-gradient(circle at 30% 55%, rgba(255,255,255,.75) .7px, transparent 1.4px),
-    radial-gradient(circle at 60% 15%, rgba(210,235,255,.8) .7px, transparent 1.4px);
+    radial-gradient(circle at 60% 15%, rgba(210,255,225,.8) .7px, transparent 1.4px);
   animation:twinkle 3.2s ease-in-out infinite;
 }
 @keyframes twinkle{ 0%,100%{opacity:.28;} 50%{opacity:.6;} }
@@ -75,7 +80,7 @@ body{
   position:fixed; inset:0; z-index:50;
   display:flex; align-items:center; justify-content:center;
   cursor:pointer;
-  background:rgba(5,8,13,0.62); backdrop-filter:blur(12px) saturate(1.1);
+  background:rgba(4,10,6,0.64); backdrop-filter:blur(12px) saturate(1.1);
   transition:opacity .55s ease, visibility .55s ease;
 }
 #enter.gone{opacity:0; visibility:hidden;}
@@ -84,45 +89,36 @@ body{
 #enter .wm{
   position:absolute; top:calc(50% - 130px); left:0; right:0; text-align:center;
   font-family:"Orbitron"; font-size:clamp(3rem,14vw,7rem);
-  letter-spacing:.12em; color:rgba(90,184,255,.06);
+  letter-spacing:.12em; color:rgba(74,222,128,.07);
   text-transform:uppercase; pointer-events:none; user-select:none; white-space:nowrap;
 }
 
-/* the button assembly: needle + angular panel */
 #enter .enter-row{ display:flex; align-items:stretch; }
-#enter .needle{
-  width:26px; height:8px; align-self:center; margin-right:14px;
-  background:var(--blue-br); box-shadow:0 0 12px var(--blue-glow);
-  animation:twinkle 2.4s ease-in-out infinite;
-}
 
 .enter-btn{
   position:relative; overflow:hidden; cursor:pointer;
   min-width:300px; padding:26px 40px;
   display:flex; flex-direction:column; align-items:center; gap:10px;
-  background:linear-gradient(135deg,#0a1a2f 0%,#14406e 45%,#1c5fa0 55%,#0a1a2f 100%);
+  background:linear-gradient(135deg,#06140b 0%,#0f4d24 45%,#166b32 55%,#06140b 100%);
   background-size:250% 250%;
   animation:btnGradientMove 6s linear infinite;
   border:1.5px solid var(--border);
-  /* Pavlov notched corners */
   clip-path:polygon(18px 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%, 0 18px);
   transition:transform .18s ease-out, border-color .18s;
 }
-/* sparkle overlay, same as .btn */
 .enter-btn::before{
   content:""; position:absolute; inset:0; pointer-events:none; z-index:0;
   background-image:
     radial-gradient(circle at 20% 30%, rgba(255,255,255,.95) 1px, transparent 2.6px),
-    radial-gradient(circle at 72% 62%, rgba(200,232,255,.9) 1px, transparent 2.4px),
+    radial-gradient(circle at 72% 62%, rgba(200,255,220,.9) 1px, transparent 2.4px),
     radial-gradient(circle at 45% 82%, rgba(255,255,255,.9) 1px, transparent 2.4px),
-    radial-gradient(circle at 86% 24%, rgba(180,220,255,.9) 1px, transparent 2.2px),
+    radial-gradient(circle at 86% 24%, rgba(180,255,210,.9) 1px, transparent 2.2px),
     radial-gradient(circle at 12% 68%, rgba(255,255,255,.85) 1px, transparent 2.2px);
   background-repeat:no-repeat;
   animation:twinkle 2.8s ease-in-out infinite;
 }
 .enter-btn > *{ position:relative; z-index:1; }
 
-/* triangle-in-box arrow, straight from Pavlov's combobox */
 .enter-btn .arrow-box{
   width:44px; height:44px; background:var(--blue); display:grid; place-items:center;
   transition:background .18s;
@@ -139,32 +135,28 @@ body{
 }
 .enter-btn .sub{
   font-family:"PrimeLight","Prime",sans-serif; font-size:.78rem; letter-spacing:.16em;
-  color:var(--text-soft); text-transform:uppercase; text-shadow:0 0 8px rgba(90,184,255,.5);
+  color:var(--text-soft); text-transform:uppercase; text-shadow:0 0 8px rgba(74,222,128,.5);
 }
 #enter:hover .enter-btn .sub{ color:#fff; }
-/* animated bottom accent line (Pavlov combobox-labeled border) */
 .enter-btn .accent{
   position:absolute; left:0; bottom:0; height:2px; width:100%; z-index:1;
   background:linear-gradient(90deg, transparent 8%, var(--blue-br) 50%, transparent 92%);
 }
 #enter:hover .enter-btn{
-  background:linear-gradient(135deg,#12508f 0%,#2b8fe6 45%,#5ab8ff 55%,#12508f 100%);
+  background:linear-gradient(135deg,#0f5a2a 0%,#22c55e 45%,#57e389 55%,#0f5a2a 100%);
   background-size:250% 250%;
   border-color:var(--blue-hi); transform:scale(1.05);
 }
 #enter:hover .enter-btn .txt{ color:#fff; }
 #enter:hover .enter-btn .arrow-box{ background:var(--blue-hot); }
 #enter:hover .enter-btn .arrow-box .tri{ border-left-color:#fff; }
-#enter:hover .needle{ background:var(--blue-hi); box-shadow:0 0 18px var(--blue-hi); }
 
 /* ---------- Card ---------- */
-.stage{
-  position:fixed; inset:0; display:grid; place-items:center; padding:24px;
-}
+.stage{ position:fixed; inset:0; display:grid; place-items:center; padding:24px; }
 .card{
   width:min(440px,100%);
-  background:linear-gradient(180deg, rgba(20,58,94,0.22), rgba(10,20,35,0.34));
-  border:1px solid rgba(74,168,255,.35);
+  background:linear-gradient(180deg, rgba(16,74,40,0.22), rgba(6,20,11,0.34));
+  border:1px solid rgba(74,222,128,.35);
   border-radius:20px;
   padding:38px 30px 30px;
   text-align:center;
@@ -176,25 +168,20 @@ body{
 .card.show{ animation:cardIn .7s cubic-bezier(.2,.8,.2,1) forwards; }
 @keyframes cardIn{ to{opacity:1; transform:none;} }
 
-/* thin animated top accent, echoing the Pavlov panel needle */
 .card::before{
   content:""; position:absolute; top:-1px; left:16%; right:16%; height:2px;
   background:linear-gradient(90deg, transparent, var(--blue-hot), transparent);
   filter:drop-shadow(0 0 6px var(--blue-glow));
 }
 
-.avatar-wrap{
-  width:132px; height:132px; margin:0 auto 14px; position:relative;
-}
+.avatar-wrap{ width:132px; height:132px; margin:0 auto 14px; position:relative; }
 @keyframes spin{ to{transform:rotate(360deg);} }
-/* avatar sits at ~80% of the decoration canvas, centered (Discord spec) */
 .avatar{
   position:absolute; width:80%; height:80%; left:50%; top:50%;
   transform:translate(-50%,-50%); z-index:1; border-radius:50%;
   background:var(--navy-0) url("assets/avatar.png") center/cover;
-  box-shadow:0 0 22px rgba(90,184,255,.35), inset 0 0 0 2px rgba(10,20,35,.9);
+  box-shadow:0 0 22px rgba(74,222,128,.35), inset 0 0 0 2px rgba(6,20,11,.9);
 }
-/* Discord-style avatar decoration overlay (halo + wings) */
 .deco{
   position:absolute; inset:0; width:100%; height:100%;
   object-fit:contain; z-index:2; pointer-events:none;
@@ -207,31 +194,30 @@ body{
   font-family:"Orbitron"; font-size:2rem; letter-spacing:.04em;
   background:linear-gradient(120deg,#fff 30%, var(--blue-hi));
   -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
-  text-shadow:0 0 30px rgba(90,184,255,.25);
+  text-shadow:0 0 30px rgba(74,222,128,.25);
 }
 .handle{ color:var(--text-dim); font-size:.95rem; margin-top:4px; letter-spacing:.05em; }
 .tag{
   color:var(--text-soft); margin-top:14px; font-size:1rem;
   padding:6px 14px; display:inline-block;
-  border:1px solid rgba(74,168,255,.25); border-radius:999px;
-  background:rgba(10,26,47,.4);
+  border:1px solid rgba(74,222,128,.25); border-radius:999px;
+  background:rgba(6,26,14,.4);
 }
 .tag b{ color:var(--blue-hi); font-weight:400; }
 
-.about{ color:#cfe4f7; font-size:.98rem; line-height:1.6; margin:20px 4px 4px; }
+.about{ color:#d3ecd9; font-size:.98rem; line-height:1.6; margin:20px 4px 4px; }
 
-/* skills row */
 .skills{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:20px; }
 .skill{
   font-size:.82rem; letter-spacing:.02em; color:var(--text-soft);
   padding:6px 13px; border-radius:8px;
-  border:1px solid rgba(43,111,176,.5);
-  background:rgba(10,26,47,.5);
+  border:1px solid rgba(43,155,79,.5);
+  background:rgba(6,26,14,.5);
   transition:.18s ease;
 }
-.skill:hover{ color:#fff; border-color:var(--blue-hi); box-shadow:0 0 16px rgba(90,184,255,.35); transform:translateY(-2px); }
+.skill:hover{ color:#fff; border-color:var(--blue-hi); box-shadow:0 0 16px rgba(74,222,128,.35); transform:translateY(-2px); }
 
-.divider{ height:1px; margin:24px 6px 20px; background:linear-gradient(90deg,transparent,rgba(74,168,255,.35),transparent); }
+.divider{ height:1px; margin:24px 6px 20px; background:linear-gradient(90deg,transparent,rgba(74,222,128,.35),transparent); }
 
 /* ---------- Pavlov-style buttons ---------- */
 @keyframes btnGradientMove{ 0%{background-position:0% 0%;} 50%{background-position:100% 100%;} 100%{background-position:0% 0%;} }
@@ -241,25 +227,25 @@ body{
   display:flex; align-items:center; gap:14px;
   padding:14px 18px; border-radius:12px; text-decoration:none;
   color:var(--text-soft); font-size:1rem; letter-spacing:.02em;
-  background:linear-gradient(135deg,#0a1a2f 0%,#14406e 45%,#1c5fa0 55%,#0a1a2f 100%);
+  background:linear-gradient(135deg,#06140b 0%,#0f4d24 45%,#166b32 55%,#06140b 100%);
   background-size:250% 250%;
   border:1px solid var(--border);
   animation:btnGradientMove 6s linear infinite;
   transition:transform .15s ease-out, border-color .15s, color .15s;
 }
-.btn::after{ /* sparkle overlay */
+.btn::after{
   content:""; position:absolute; inset:0; pointer-events:none;
   background-image:
     radial-gradient(circle at 20% 30%, rgba(255,255,255,.9) 1px, transparent 2.4px),
-    radial-gradient(circle at 72% 62%, rgba(200,232,255,.85) 1px, transparent 2.2px),
-    radial-gradient(circle at 86% 24%, rgba(180,220,255,.85) 1px, transparent 2px);
+    radial-gradient(circle at 72% 62%, rgba(200,255,220,.85) 1px, transparent 2.2px),
+    radial-gradient(circle at 86% 24%, rgba(180,255,210,.85) 1px, transparent 2px);
   background-repeat:no-repeat;
   opacity:.4; animation:twinkle 2.8s ease-in-out infinite;
 }
 .btn:nth-of-type(2n)::after{ animation-duration:3.4s; animation-delay:-.9s; }
 .btn:nth-of-type(3n)::after{ animation-duration:2.3s; animation-delay:-1.6s; }
 .btn:hover{
-  background:linear-gradient(135deg,#12508f 0%,#2b8fe6 45%,#5ab8ff 55%,#12508f 100%);
+  background:linear-gradient(135deg,#0f5a2a 0%,#22c55e 45%,#57e389 55%,#0f5a2a 100%);
   background-size:250% 250%;
   border-color:var(--blue-hi); color:#fff; transform:scale(1.03);
 }
@@ -267,22 +253,60 @@ body{
 .btn .ico svg{ width:22px; height:22px; fill:currentColor; }
 .btn .l{ z-index:1; font-weight:400; }
 .btn .l small{ display:block; color:var(--text-dim); font-size:.72rem; letter-spacing:.03em; }
-.btn:hover .l small{ color:#cfe6ff; }
+.btn:hover .l small{ color:#d3ecd9; }
 .btn .chev{ margin-left:auto; z-index:1; opacity:.6; font-size:1.1rem; }
 
 .footer{ margin-top:22px; color:var(--text-dim); font-size:.72rem; letter-spacing:.08em; }
 
+/* ---------- music toggle ---------- */
+.music{
+  position:fixed; right:18px; bottom:18px; z-index:60;
+  width:46px; height:46px; display:grid; place-items:center;
+  background:linear-gradient(135deg,#06140b,#166b32);
+  border:1px solid var(--border); border-radius:12px;
+  color:var(--text-soft); cursor:pointer; font-size:1.2rem;
+  box-shadow:0 6px 20px rgba(0,0,0,.4);
+  opacity:0; transform:translateY(10px) scale(.9); pointer-events:none;
+  transition:.3s ease;
+}
+.music.show{ opacity:1; transform:none; pointer-events:auto; }
+.music:hover{ border-color:var(--blue-hi); color:#fff; box-shadow:0 0 18px rgba(74,222,128,.4); }
+
+/* ---------- lyric captions ---------- */
+.caption{
+  position:fixed; left:50%; bottom:30px; transform:translate(-50%,8px);
+  z-index:55; max-width:min(640px,86vw); text-align:center;
+  font-family:"Prime",sans-serif; font-size:1.08rem; line-height:1.4; letter-spacing:.01em;
+  color:#fff; text-shadow:0 0 12px rgba(74,222,128,.85), 0 2px 6px rgba(0,0,0,.9);
+  padding:9px 18px; border-radius:12px; pointer-events:none;
+  background:rgba(4,10,6,.42); border:1px solid rgba(74,222,128,.22);
+  backdrop-filter:blur(4px);
+  opacity:0; transition:opacity .28s ease, transform .28s ease;
+}
+.caption.show{ opacity:1; transform:translate(-50%,0); }
+
 @media (max-width:480px){
   .card{ padding:30px 20px 24px; }
   .name{ font-size:1.7rem; }
+  .caption{ font-size:.95rem; bottom:78px; }
 }
 </style>
 </head>
 <body>
 <div class="bg"></div>
+<video class="bgvid" autoplay muted loop playsinline poster="assets/bg.png">
+  <source src="assets/bg.mp4" type="video/mp4" />
+</video>
 <div class="bg-tint"></div>
 <div class="stars"></div>
 <canvas id="fx"></canvas>
+
+<!-- background song (drop your track at assets/audio.mp3) -->
+<audio id="song" src="assets/audio.mp3" loop preload="auto"></audio>
+<button id="mute" class="music" aria-label="toggle sound" title="mute / unmute">🔊</button>
+
+<!-- synced lyric captions (edit the LYRICS list in the script below) -->
+<div id="caption" class="caption" aria-live="polite"></div>
 
 <!-- click to enter -->
 <div id="enter">
@@ -308,7 +332,7 @@ body{
     <div class="handle">@16thorn</div>
     <div class="tag">UI &amp; <b>frontend developer</b></div>
 
-    <p class="about">just a dev who likes making stuff look clean. c# &amp; holy c, tweaking ui till it feels right.</p>
+    <p class="about">developer, i like sd2016, jaydes, bunii, sematary.</p>
 
     <div class="skills">
       <span class="skill">C#</span>
@@ -343,7 +367,7 @@ body{
   const cv = document.getElementById("fx");
   const ctx = cv.getContext("2d");
   let W, H, DPR, parts = [];
-  const mouse = { x:-9999, y:-9999, r:120 };   // repel radius
+  const mouse = { x:-9999, y:-9999 };
 
   function resize(){
     DPR = Math.min(window.devicePixelRatio || 1, 2);
@@ -351,19 +375,18 @@ body{
     H = cv.height = innerHeight * DPR;
     cv.style.width = innerWidth + "px";
     cv.style.height = innerHeight + "px";
-    const count = Math.round((innerWidth * innerHeight) / 14000); // density
+    const count = Math.round((innerWidth * innerHeight) / 14000);
     parts = Array.from({length:count}, () => spawn());
   }
   function spawn(){
     const r = (Math.random()*1.6 + 0.5) * DPR;
     return {
       x: Math.random()*W, y: Math.random()*H,
-      hx: 0, hy: 0,                       // home drift velocity
       vx:(Math.random()-.5)*0.12*DPR, vy:(Math.random()-.5)*0.12*DPR,
-      r, base:r,
-      tw: Math.random()*Math.PI*2,        // twinkle phase
-      tws: 0.01 + Math.random()*0.03,     // twinkle speed
-      hue: Math.random() < 0.5 ? "255,255,255" : "180,220,255"
+      r,
+      tw: Math.random()*Math.PI*2,
+      tws: 0.01 + Math.random()*0.03,
+      hue: Math.random() < 0.5 ? "255,255,255" : "180,255,210"
     };
   }
 
@@ -379,10 +402,7 @@ body{
     ctx.clearRect(0,0,W,H);
     const rad = 120 * DPR;
     for(const p of parts){
-      // gentle drift
       p.x += p.vx; p.y += p.vy;
-
-      // mouse repulsion — push away, then ease back
       const dx = p.x - mouse.x, dy = p.y - mouse.y;
       const d2 = dx*dx + dy*dy;
       if(d2 < rad*rad){
@@ -391,20 +411,15 @@ body{
         p.x += (dx/d) * force;
         p.y += (dy/d) * force;
       }
-
-      // wrap around edges
       if(p.x < 0) p.x += W; else if(p.x > W) p.x -= W;
       if(p.y < 0) p.y += H; else if(p.y > H) p.y -= H;
-
-      // twinkle
       p.tw += p.tws;
       const a = 0.35 + Math.abs(Math.sin(p.tw)) * 0.55;
-
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
       ctx.fillStyle = "rgba(" + p.hue + "," + a.toFixed(2) + ")";
       ctx.shadowBlur = 6 * DPR;
-      ctx.shadowColor = "rgba(90,184,255,0.8)";
+      ctx.shadowColor = "rgba(74,222,128,0.8)";
       ctx.fill();
     }
     ctx.shadowBlur = 0;
@@ -416,17 +431,134 @@ body{
 
 document.getElementById("year").textContent = new Date().getFullYear();
 
+/* ---------- enter + audio ---------- */
 const enter = document.getElementById("enter");
 const card  = document.getElementById("card");
+const song  = document.getElementById("song");
+const mute  = document.getElementById("mute");
+const bgvid = document.querySelector(".bgvid");
+
+// keep the background video looping even if the browser ignores the loop attr
+bgvid.muted = true;
+bgvid.loop = true;
+bgvid.addEventListener("ended", ()=>{ bgvid.currentTime = 0; bgvid.play().catch(()=>{}); });
+// try to start it right away; if the browser blocks it, the Enter click will
+bgvid.play().catch(()=>{});
+
 function open(){
   if(enter.classList.contains("gone")) return;
   enter.classList.add("gone");
   card.classList.add("show");
+  mute.classList.add("show");
+  // Enter is a user gesture -> unblocks media in strict browsers (LibreWolf)
+  bgvid.muted = true;
+  bgvid.play().catch(()=>{});
+  song.volume = 0.45;
+  song.play().catch(()=>{});
 }
 enter.addEventListener("click", open);
 window.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" ") open(); });
 
-// Discord: copy username to clipboard
+// mute / unmute toggle
+mute.addEventListener("click", e=>{
+  e.stopPropagation();
+  song.muted = !song.muted;
+  mute.textContent = song.muted ? "🔇" : "🔊";
+});
+
+/* ---------- synced lyric captions ----------
+   EDIT THIS LIST. Each line = { t: seconds into the song, x: "text to show" }.
+   - t is when the line should appear (e.g. 12.5 = 12.5s in).
+   - Keep them in order. Use x:"" to clear the caption (instrumental gaps).
+   - Tip: play the song, note the time each lyric starts, type it here.        */
+/* smokedope2016 — Banshee (synced from .lrc) */
+const LYRICS = [
+  { t: 0.0,    x: "" },
+  { t: 24.94,  x: "this the winning team" },
+  { t: 26.42,  x: "gave up all my dreams" },
+  { t: 27.57,  x: "id do anything" },
+  { t: 28.43,  x: "never sleep" },
+  { t: 29.14,  x: "ball is life im balling like a fuckin fiend" },
+  { t: 38.04,  x: "epitome" },
+  { t: 39.29,  x: "manifested this life" },
+  { t: 40.06,  x: "no epiphany" },
+  { t: 41.39,  x: "kid in me" },
+  { t: 41.84,  x: "want this shit for like yea thats the kid in me" },
+  { t: 44.59,  x: "if i leave" },
+  { t: 45.47,  x: "will you chase me down and tell me what i need" },
+  { t: 47.88,  x: "white girl in the trap" },
+  { t: 48.99,  x: "her name is stephanie no heffanie" },
+  { t: 50.81,  x: "guns up" },
+  { t: 53.23,  x: "dont you try to play dumb" },
+  { t: 56.38,  x: "can do this shit all night long" },
+  { t: 59.66,  x: "can do this shit all night long" },
+  { t: 63.87,  x: "guns up" },
+  { t: 66.21,  x: "dont you try to play dumb" },
+  { t: 69.44,  x: "can do this shit all night long" },
+  { t: 72.72,  x: "do you wanna fight brah" },
+  { t: 76.58,  x: "16lyfe we pulled up" },
+  { t: 78.12,  x: "throwed up" },
+  { t: 78.65,  x: "tote up" },
+  { t: 79.89,  x: "back of the party dont ever try to approach us" },
+  { t: 82.94,  x: "listening to aphex wit my twins by my side" },
+  { t: 85.90,  x: "me bart fitted" },
+  { t: 86.65,  x: "we get litty" },
+  { t: 87.46,  x: "dont be sad when we die yeah" },
+  { t: 89.11,  x: "16lyfe we pulled up" },
+  { t: 90.68,  x: "throwed up" },
+  { t: 91.57,  x: "tote up" },
+  { t: 92.29,  x: "back of the party dont ever try to approach us" },
+  { t: 95.72,  x: "listening to aphex wit my twins by my side" },
+  { t: 98.50,  x: "me bart fitted" },
+  { t: 99.52,  x: "we get litty" },
+  { t: 100.20, x: "dont be sad when we die yeah" },
+  { t: 115.06, x: "guns up" },
+  { t: 117.43, x: "dont you try to play dumb" },
+  { t: 120.63, x: "can do this shit all night long" },
+  { t: 123.56, x: "can do this shit all night long" },
+  { t: 127.71, x: "guns up" },
+  { t: 130.11, x: "dont you try to play dumb" },
+  { t: 133.34, x: "can do this shit all night long" },
+  { t: 136.41, x: "do you wanna fight brah" },
+  { t: 140.55, x: "16lyfe we pulled up" },
+  { t: 141.92, x: "throwed up" },
+  { t: 142.87, x: "tote up" },
+  { t: 143.51, x: "back of the party dont ever try to approach us" },
+  { t: 147.03, x: "listening to aphex wit my twins by my side" },
+  { t: 149.93, x: "me bart fitted" },
+  { t: 150.33, x: "we get litty" },
+  { t: 151.21, x: "dont be sad when we die yeah" },
+  { t: 153.45, x: "16lyfe we pulled up" },
+  { t: 154.98, x: "throwed up" },
+  { t: 155.60, x: "tote up" },
+  { t: 156.38, x: "back of the party dont ever try to approach us" },
+  { t: 159.99, x: "listening to aphex wit my twins by my side" },
+  { t: 162.65, x: "me bart fitted" },
+  { t: 163.14, x: "we get litty" },
+  { t: 164.19, x: "dont be sad when we die yeah" },
+  { t: 166.34, x: "" }
+];
+
+const cap = document.getElementById("caption");
+let lastLine = -2;
+song.addEventListener("timeupdate", ()=>{
+  const now = song.currentTime;
+  let idx = -1;
+  for(let i=0; i<LYRICS.length; i++){
+    if(now >= LYRICS[i].t) idx = i; else break;
+  }
+  if(idx === lastLine) return;
+  lastLine = idx;
+  const line = idx >= 0 ? LYRICS[idx].x : "";
+  if(line){ cap.textContent = line; cap.classList.add("show"); }
+  else { cap.classList.remove("show"); }
+});
+// hide captions while muted; show again when unmuted
+mute.addEventListener("click", ()=>{
+  if(song.muted) cap.classList.remove("show");
+});
+
+/* ---------- discord copy ---------- */
 const dc = document.getElementById("discord");
 const sub = document.getElementById("dc-sub");
 dc.addEventListener("click", async e=>{
