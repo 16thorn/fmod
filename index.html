@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>16thorn</title>
+<meta name="description" content="thorn — UI & frontend developer" />
+<meta property="og:title" content="thorn" />
+<meta property="og:description" content="UI & frontend developer · C# · Holy C" />
+<meta name="theme-color" content="#0a1a2f" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>" />
+<style>
+@font-face { font-family:"Prime"; src:url("assets/fonts/Prime-Regular.ttf"); font-display:swap; }
+@font-face { font-family:"PrimeLight"; src:url("assets/fonts/Prime-Light.ttf"); font-display:swap; }
+@font-face { font-family:"Orbitron"; src:url("assets/fonts/Orbitron-Bold.ttf"); font-display:swap; }
+
+:root{
+  --navy-0:#0a1a2f; --navy-1:#0a3a6e; --navy-2:#12304f;
+  --blue-mid:#14406e; --blue:#2b6fb0; --blue-br:#2b8fe6;
+  --blue-glow:#4aa8ff; --blue-hot:#5ab8ff; --blue-hi:#6ac2ff;
+  --text:#eaf6ff; --text-soft:#9fc9ee; --text-dim:#6f9bc2;
+  --border:#2b6fb0;
+}
+
+*{box-sizing:border-box; margin:0; padding:0;}
+html,body{height:100%;}
+body{
+  font-family:"Prime",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  color:var(--text);
+  background:#05080d;
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+  cursor:default;
+  user-select:none; -webkit-user-select:none;
+}
+
+/* ---------- Background ---------- */
+.bg{
+  position:fixed; inset:0; z-index:-3;
+  background:url("assets/bg.png") center/cover no-repeat;
+  transform:scale(1.08);
+  filter:brightness(0.55) saturate(1.15);
+  animation:bgDrift 24s ease-in-out infinite alternate;
+}
+@keyframes bgDrift{ from{transform:scale(1.08) translate(0,0);} to{transform:scale(1.14) translate(-1.5%,-1.5%);} }
+
+/* blue tint + vignette on top of the photo */
+.bg-tint{
+  position:fixed; inset:0; z-index:-2; pointer-events:none;
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(43,143,230,0.22), transparent 55%),
+    radial-gradient(120% 90% at 50% 100%, rgba(10,26,47,0.85), transparent 60%),
+    linear-gradient(180deg, rgba(5,8,13,0.35), rgba(5,8,13,0.75));
+}
+
+/* drifting starfield / sparkles (same idea as Pavlov button sparkle) */
+.stars{
+  position:fixed; inset:0; z-index:-1; pointer-events:none; opacity:0.5;
+  background-image:
+    radial-gradient(circle at 15% 25%, rgba(255,255,255,.9) .8px, transparent 1.6px),
+    radial-gradient(circle at 72% 62%, rgba(200,232,255,.85) .8px, transparent 1.6px),
+    radial-gradient(circle at 45% 82%, rgba(255,255,255,.8) .8px, transparent 1.6px),
+    radial-gradient(circle at 86% 24%, rgba(180,220,255,.8) .8px, transparent 1.4px),
+    radial-gradient(circle at 30% 55%, rgba(255,255,255,.75) .7px, transparent 1.4px),
+    radial-gradient(circle at 60% 15%, rgba(210,235,255,.8) .7px, transparent 1.4px);
+  animation:twinkle 3.2s ease-in-out infinite;
+}
+@keyframes twinkle{ 0%,100%{opacity:.28;} 50%{opacity:.6;} }
+
+/* interactive sparkle canvas */
+#fx{ position:fixed; inset:0; z-index:-1; pointer-events:none; }
+
+/* ---------- Enter splash (Pavlov-style) ---------- */
+#enter{
+  position:fixed; inset:0; z-index:50;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  background:rgba(5,8,13,0.62); backdrop-filter:blur(12px) saturate(1.1);
+  transition:opacity .55s ease, visibility .55s ease;
+}
+#enter.gone{opacity:0; visibility:hidden;}
+
+/* faint watermark handle behind the button */
+#enter .wm{
+  position:absolute; top:calc(50% - 130px); left:0; right:0; text-align:center;
+  font-family:"Orbitron"; font-size:clamp(3rem,14vw,7rem);
+  letter-spacing:.12em; color:rgba(90,184,255,.06);
+  text-transform:uppercase; pointer-events:none; user-select:none; white-space:nowrap;
+}
+
+/* the button assembly: needle + angular panel */
+#enter .enter-row{ display:flex; align-items:stretch; }
+#enter .needle{
+  width:26px; height:8px; align-self:center; margin-right:14px;
+  background:var(--blue-br); box-shadow:0 0 12px var(--blue-glow);
+  animation:twinkle 2.4s ease-in-out infinite;
+}
+
+.enter-btn{
+  position:relative; overflow:hidden; cursor:pointer;
+  min-width:300px; padding:26px 40px;
+  display:flex; flex-direction:column; align-items:center; gap:10px;
+  background:linear-gradient(135deg,#0a1a2f 0%,#14406e 45%,#1c5fa0 55%,#0a1a2f 100%);
+  background-size:250% 250%;
+  animation:btnGradientMove 6s linear infinite;
+  border:1.5px solid var(--border);
+  /* Pavlov notched corners */
+  clip-path:polygon(18px 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%, 0 18px);
+  transition:transform .18s ease-out, border-color .18s;
+}
+/* sparkle overlay, same as .btn */
+.enter-btn::before{
+  content:""; position:absolute; inset:0; pointer-events:none; z-index:0;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(255,255,255,.95) 1px, transparent 2.6px),
+    radial-gradient(circle at 72% 62%, rgba(200,232,255,.9) 1px, transparent 2.4px),
+    radial-gradient(circle at 45% 82%, rgba(255,255,255,.9) 1px, transparent 2.4px),
+    radial-gradient(circle at 86% 24%, rgba(180,220,255,.9) 1px, transparent 2.2px),
+    radial-gradient(circle at 12% 68%, rgba(255,255,255,.85) 1px, transparent 2.2px);
+  background-repeat:no-repeat;
+  animation:twinkle 2.8s ease-in-out infinite;
+}
+.enter-btn > *{ position:relative; z-index:1; }
+
+/* triangle-in-box arrow, straight from Pavlov's combobox */
+.enter-btn .arrow-box{
+  width:44px; height:44px; background:var(--blue); display:grid; place-items:center;
+  transition:background .18s;
+}
+.enter-btn .arrow-box .tri{
+  width:0; height:0;
+  border-top:11px solid transparent; border-bottom:11px solid transparent;
+  border-left:16px solid var(--navy-2); margin-left:4px;
+  transition:border-left-color .18s;
+}
+.enter-btn .txt{
+  font-family:"Orbitron"; letter-spacing:.34em; text-transform:uppercase;
+  font-size:.9rem; color:var(--text-soft); padding-left:.34em;
+}
+.enter-btn .sub{
+  font-family:"PrimeLight","Prime",sans-serif; font-size:.78rem; letter-spacing:.16em;
+  color:var(--text-soft); text-transform:uppercase; text-shadow:0 0 8px rgba(90,184,255,.5);
+}
+#enter:hover .enter-btn .sub{ color:#fff; }
+/* animated bottom accent line (Pavlov combobox-labeled border) */
+.enter-btn .accent{
+  position:absolute; left:0; bottom:0; height:2px; width:100%; z-index:1;
+  background:linear-gradient(90deg, transparent 8%, var(--blue-br) 50%, transparent 92%);
+}
+#enter:hover .enter-btn{
+  background:linear-gradient(135deg,#12508f 0%,#2b8fe6 45%,#5ab8ff 55%,#12508f 100%);
+  background-size:250% 250%;
+  border-color:var(--blue-hi); transform:scale(1.05);
+}
+#enter:hover .enter-btn .txt{ color:#fff; }
+#enter:hover .enter-btn .arrow-box{ background:var(--blue-hot); }
+#enter:hover .enter-btn .arrow-box .tri{ border-left-color:#fff; }
+#enter:hover .needle{ background:var(--blue-hi); box-shadow:0 0 18px var(--blue-hi); }
+
+/* ---------- Card ---------- */
+.stage{
+  position:fixed; inset:0; display:grid; place-items:center; padding:24px;
+}
+.card{
+  width:min(440px,100%);
+  background:linear-gradient(180deg, rgba(20,58,94,0.22), rgba(10,20,35,0.34));
+  border:1px solid rgba(74,168,255,.35);
+  border-radius:20px;
+  padding:38px 30px 30px;
+  text-align:center;
+  backdrop-filter:blur(7px) saturate(1.1);
+  box-shadow:0 24px 80px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.06);
+  position:relative;
+  opacity:0; transform:translateY(18px) scale(.98);
+}
+.card.show{ animation:cardIn .7s cubic-bezier(.2,.8,.2,1) forwards; }
+@keyframes cardIn{ to{opacity:1; transform:none;} }
+
+/* thin animated top accent, echoing the Pavlov panel needle */
+.card::before{
+  content:""; position:absolute; top:-1px; left:16%; right:16%; height:2px;
+  background:linear-gradient(90deg, transparent, var(--blue-hot), transparent);
+  filter:drop-shadow(0 0 6px var(--blue-glow));
+}
+
+.avatar-wrap{
+  width:132px; height:132px; margin:0 auto 14px; position:relative;
+}
+@keyframes spin{ to{transform:rotate(360deg);} }
+/* avatar sits at ~80% of the decoration canvas, centered (Discord spec) */
+.avatar{
+  position:absolute; width:80%; height:80%; left:50%; top:50%;
+  transform:translate(-50%,-50%); z-index:1; border-radius:50%;
+  background:var(--navy-0) url("assets/avatar.png") center/cover;
+  box-shadow:0 0 22px rgba(90,184,255,.35), inset 0 0 0 2px rgba(10,20,35,.9);
+}
+/* Discord-style avatar decoration overlay (halo + wings) */
+.deco{
+  position:absolute; inset:0; width:100%; height:100%;
+  object-fit:contain; z-index:2; pointer-events:none;
+  filter:drop-shadow(0 2px 5px rgba(0,0,0,.45));
+  animation:decoBob 4.5s ease-in-out infinite;
+}
+@keyframes decoBob{ 0%,100%{transform:translateY(0);} 50%{transform:translateY(-3px);} }
+
+.name{
+  font-family:"Orbitron"; font-size:2rem; letter-spacing:.04em;
+  background:linear-gradient(120deg,#fff 30%, var(--blue-hi));
+  -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+  text-shadow:0 0 30px rgba(90,184,255,.25);
+}
+.handle{ color:var(--text-dim); font-size:.95rem; margin-top:4px; letter-spacing:.05em; }
+.tag{
+  color:var(--text-soft); margin-top:14px; font-size:1rem;
+  padding:6px 14px; display:inline-block;
+  border:1px solid rgba(74,168,255,.25); border-radius:999px;
+  background:rgba(10,26,47,.4);
+}
+.tag b{ color:var(--blue-hi); font-weight:400; }
+
+.about{ color:#cfe4f7; font-size:.98rem; line-height:1.6; margin:20px 4px 4px; }
+
+/* skills row */
+.skills{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:20px; }
+.skill{
+  font-size:.82rem; letter-spacing:.02em; color:var(--text-soft);
+  padding:6px 13px; border-radius:8px;
+  border:1px solid rgba(43,111,176,.5);
+  background:rgba(10,26,47,.5);
+  transition:.18s ease;
+}
+.skill:hover{ color:#fff; border-color:var(--blue-hi); box-shadow:0 0 16px rgba(90,184,255,.35); transform:translateY(-2px); }
+
+.divider{ height:1px; margin:24px 6px 20px; background:linear-gradient(90deg,transparent,rgba(74,168,255,.35),transparent); }
+
+/* ---------- Pavlov-style buttons ---------- */
+@keyframes btnGradientMove{ 0%{background-position:0% 0%;} 50%{background-position:100% 100%;} 100%{background-position:0% 0%;} }
+.links{ display:flex; flex-direction:column; gap:12px; }
+.btn{
+  position:relative; overflow:hidden;
+  display:flex; align-items:center; gap:14px;
+  padding:14px 18px; border-radius:12px; text-decoration:none;
+  color:var(--text-soft); font-size:1rem; letter-spacing:.02em;
+  background:linear-gradient(135deg,#0a1a2f 0%,#14406e 45%,#1c5fa0 55%,#0a1a2f 100%);
+  background-size:250% 250%;
+  border:1px solid var(--border);
+  animation:btnGradientMove 6s linear infinite;
+  transition:transform .15s ease-out, border-color .15s, color .15s;
+}
+.btn::after{ /* sparkle overlay */
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(255,255,255,.9) 1px, transparent 2.4px),
+    radial-gradient(circle at 72% 62%, rgba(200,232,255,.85) 1px, transparent 2.2px),
+    radial-gradient(circle at 86% 24%, rgba(180,220,255,.85) 1px, transparent 2px);
+  background-repeat:no-repeat;
+  opacity:.4; animation:twinkle 2.8s ease-in-out infinite;
+}
+.btn:nth-of-type(2n)::after{ animation-duration:3.4s; animation-delay:-.9s; }
+.btn:nth-of-type(3n)::after{ animation-duration:2.3s; animation-delay:-1.6s; }
+.btn:hover{
+  background:linear-gradient(135deg,#12508f 0%,#2b8fe6 45%,#5ab8ff 55%,#12508f 100%);
+  background-size:250% 250%;
+  border-color:var(--blue-hi); color:#fff; transform:scale(1.03);
+}
+.btn .ico{ width:26px; height:26px; flex:0 0 26px; display:grid; place-items:center; z-index:1; }
+.btn .ico svg{ width:22px; height:22px; fill:currentColor; }
+.btn .l{ z-index:1; font-weight:400; }
+.btn .l small{ display:block; color:var(--text-dim); font-size:.72rem; letter-spacing:.03em; }
+.btn:hover .l small{ color:#cfe6ff; }
+.btn .chev{ margin-left:auto; z-index:1; opacity:.6; font-size:1.1rem; }
+
+.footer{ margin-top:22px; color:var(--text-dim); font-size:.72rem; letter-spacing:.08em; }
+
+@media (max-width:480px){
+  .card{ padding:30px 20px 24px; }
+  .name{ font-size:1.7rem; }
+}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="bg-tint"></div>
+<div class="stars"></div>
+<canvas id="fx"></canvas>
+
+<!-- click to enter -->
+<div id="enter">
+  <div class="wm">16THORN</div>
+  <div class="enter-row">
+    <div class="enter-btn">
+      <div class="arrow-box"><div class="tri"></div></div>
+      <div class="txt">Enter</div>
+      <div class="sub">click anywhere</div>
+      <div class="accent"></div>
+    </div>
+  </div>
+</div>
+
+<main class="stage">
+  <section class="card" id="card" aria-label="profile">
+    <div class="avatar-wrap">
+      <div class="avatar"></div>
+      <img class="deco" src="assets/decoration.png" alt="" />
+    </div>
+
+    <h1 class="name">thorn</h1>
+    <div class="handle">@16thorn</div>
+    <div class="tag">UI &amp; <b>frontend developer</b></div>
+
+    <p class="about">just a dev who likes making stuff look clean. c# &amp; holy c, tweaking ui till it feels right.</p>
+
+    <div class="skills">
+      <span class="skill">C#</span>
+      <span class="skill">Holy C</span>
+      <span class="skill">UI Development</span>
+      <span class="skill">Frontend</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <nav class="links">
+      <a class="btn" href="mailto:thorn@fmod.lol">
+        <span class="ico"><svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg></span>
+        <span class="l">Email<small>thorn@fmod.lol</small></span>
+        <span class="chev">›</span>
+      </a>
+
+      <a class="btn" id="discord" href="#" data-copy="16thorn">
+        <span class="ico"><svg viewBox="0 0 24 24"><path d="M19.54 5.34A16.1 16.1 0 0 0 15.5 4.1l-.2.4a12 12 0 0 1 3.6 1.15A13.6 13.6 0 0 0 12 4.9a13.6 13.6 0 0 0-6.9 0A15.8 15.8 0 0 0 8.7 4.5l-.2-.4A16.1 16.1 0 0 0 4.46 5.34C1.9 9.1 1.2 12.77 1.55 16.38a16.2 16.2 0 0 0 4.94 2.5l.4-.55c-.67-.25-1.3-.56-1.9-.93l.16-.12a11.6 11.6 0 0 0 9.9 0l.16.12c-.6.37-1.23.68-1.9.93l.4.55a16.1 16.1 0 0 0 4.94-2.5c.42-4.18-.7-7.82-2.51-11.04zM8.52 14.2c-.97 0-1.77-.9-1.77-2s.78-2 1.77-2 1.79.9 1.77 2c0 1.1-.79 2-1.77 2zm6.96 0c-.97 0-1.77-.9-1.77-2s.78-2 1.77-2 1.79.9 1.77 2c0 1.1-.78 2-1.77 2z"/></svg></span>
+        <span class="l">Discord<small id="dc-sub">16thorn — click to copy</small></span>
+        <span class="chev">›</span>
+      </a>
+    </nav>
+
+    <p class="footer">© <span id="year"></span> 16THORN</p>
+  </section>
+</main>
+
+<script>
+/* ---------- interactive sparkles ---------- */
+(function(){
+  const cv = document.getElementById("fx");
+  const ctx = cv.getContext("2d");
+  let W, H, DPR, parts = [];
+  const mouse = { x:-9999, y:-9999, r:120 };   // repel radius
+
+  function resize(){
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = cv.width = innerWidth * DPR;
+    H = cv.height = innerHeight * DPR;
+    cv.style.width = innerWidth + "px";
+    cv.style.height = innerHeight + "px";
+    const count = Math.round((innerWidth * innerHeight) / 14000); // density
+    parts = Array.from({length:count}, () => spawn());
+  }
+  function spawn(){
+    const r = (Math.random()*1.6 + 0.5) * DPR;
+    return {
+      x: Math.random()*W, y: Math.random()*H,
+      hx: 0, hy: 0,                       // home drift velocity
+      vx:(Math.random()-.5)*0.12*DPR, vy:(Math.random()-.5)*0.12*DPR,
+      r, base:r,
+      tw: Math.random()*Math.PI*2,        // twinkle phase
+      tws: 0.01 + Math.random()*0.03,     // twinkle speed
+      hue: Math.random() < 0.5 ? "255,255,255" : "180,220,255"
+    };
+  }
+
+  addEventListener("resize", resize);
+  addEventListener("mousemove", e => { mouse.x = e.clientX*DPR; mouse.y = e.clientY*DPR; });
+  addEventListener("mouseout", () => { mouse.x = mouse.y = -9999; });
+  addEventListener("touchmove", e => {
+    const t = e.touches[0]; if(t){ mouse.x = t.clientX*DPR; mouse.y = t.clientY*DPR; }
+  }, {passive:true});
+  addEventListener("touchend", () => { mouse.x = mouse.y = -9999; });
+
+  function frame(){
+    ctx.clearRect(0,0,W,H);
+    const rad = 120 * DPR;
+    for(const p of parts){
+      // gentle drift
+      p.x += p.vx; p.y += p.vy;
+
+      // mouse repulsion — push away, then ease back
+      const dx = p.x - mouse.x, dy = p.y - mouse.y;
+      const d2 = dx*dx + dy*dy;
+      if(d2 < rad*rad){
+        const d = Math.sqrt(d2) || 1;
+        const force = (1 - d/rad) * 6 * DPR;
+        p.x += (dx/d) * force;
+        p.y += (dy/d) * force;
+      }
+
+      // wrap around edges
+      if(p.x < 0) p.x += W; else if(p.x > W) p.x -= W;
+      if(p.y < 0) p.y += H; else if(p.y > H) p.y -= H;
+
+      // twinkle
+      p.tw += p.tws;
+      const a = 0.35 + Math.abs(Math.sin(p.tw)) * 0.55;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fillStyle = "rgba(" + p.hue + "," + a.toFixed(2) + ")";
+      ctx.shadowBlur = 6 * DPR;
+      ctx.shadowColor = "rgba(90,184,255,0.8)";
+      ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+    requestAnimationFrame(frame);
+  }
+  resize();
+  frame();
+})();
+
+document.getElementById("year").textContent = new Date().getFullYear();
+
+const enter = document.getElementById("enter");
+const card  = document.getElementById("card");
+function open(){
+  if(enter.classList.contains("gone")) return;
+  enter.classList.add("gone");
+  card.classList.add("show");
+}
+enter.addEventListener("click", open);
+window.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" ") open(); });
+
+// Discord: copy username to clipboard
+const dc = document.getElementById("discord");
+const sub = document.getElementById("dc-sub");
+dc.addEventListener("click", async e=>{
+  e.preventDefault();
+  try{
+    await navigator.clipboard.writeText(dc.dataset.copy);
+    const old = sub.textContent;
+    sub.textContent = "copied! ✓";
+    setTimeout(()=> sub.textContent = old, 1600);
+  }catch{ sub.textContent = "16thorn"; }
+});
+</script>
+</body>
+</html>
